@@ -2,12 +2,19 @@ package appewtc.masterung.coinsdropbsru;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.TimeUtils;
+
+import java.util.Iterator;
 
 public class MyGdxGame extends ApplicationAdapter {
 	private SpriteBatch batch;
@@ -15,6 +22,12 @@ public class MyGdxGame extends ApplicationAdapter {
 	private OrthographicCamera objOrthographicCamera;
 	private Rectangle pigRectangle, coinsRectangle;
 	private Vector3 objVector3;
+	private Sound moveSound;
+	private Array<Rectangle> objArray;
+	private long lastDropTime;
+	private Iterator<Rectangle> objIterator;
+	private Music backGroundMusic;
+
 	
 	@Override
 	public void create () {
@@ -38,9 +51,33 @@ public class MyGdxGame extends ApplicationAdapter {
 		pigRectangle.width = 64;
 		pigRectangle.height = 64;
 
+		//Setup Sound Effect
+		moveSound = Gdx.audio.newSound(Gdx.files.internal("phonton2.wav"));
+
+		//Create Array from Random
+		objArray = new Array<Rectangle>();
+		myRandomDrop();
+
+		//Create Background Music
+		backGroundMusic = Gdx.audio.newMusic(Gdx.files.internal("bggame.mp3"));
+
 
 
 	}	// Main Method
+
+	private void myRandomDrop() {
+
+		//Create Rectangle coins
+		coinsRectangle = new Rectangle();
+		coinsRectangle.x = MathUtils.random(0, 1216);
+		coinsRectangle.y = 800;
+		coinsRectangle.width = 64;
+		coinsRectangle.height = 64;
+
+		objArray.add(coinsRectangle);
+		lastDropTime = TimeUtils.nanoTime();
+
+	}	// myRandomDrop
 
 	@Override
 	public void render () {
@@ -60,11 +97,19 @@ public class MyGdxGame extends ApplicationAdapter {
 		//Draw Pig
 		batch.draw(imvPig, pigRectangle.x, pigRectangle.y);
 
+		//Draw Coins
+		for (Rectangle forRectangle : objArray) {
+			batch.draw(imvCoins, forRectangle.x, forRectangle.y);
+		}
+
 
 		batch.end();
 
 		//Get onTouch
 		if (Gdx.input.isTouched()) {
+
+			//Open Sound Effect
+			moveSound.play();
 
 			//Check Touch
 			objVector3 = new Vector3();
@@ -74,14 +119,43 @@ public class MyGdxGame extends ApplicationAdapter {
 				pigRectangle.x -= 10;
 			} else {
 				pigRectangle.x += 10;
-			}	// if1
+			}    // if1
+
+		} 	// if
+
+		//Control pigRectangle.x 0-1280
+		if (pigRectangle.x < 0) {
+			pigRectangle.x = 0;
+		}	//if1
+		if (pigRectangle.x > 1216) {
+			pigRectangle.x = 1216;
+		}	//if2
 
 
+		//Start RunTime
+		if (TimeUtils.nanoTime() - lastDropTime > 1E9 ) {
+			myRandomDrop();
+		}
 
-		} else {
+		//Check True & False
+		objIterator = objArray.iterator();
 
-		}	// if
+		while (objIterator.hasNext()) {
 
+			Rectangle objMyCoins = objIterator.next();
+			objMyCoins.y -= 100 * Gdx.graphics.getDeltaTime();
+
+			//When drop to floor
+			if (objMyCoins.y + 64 < 0) {
+
+				objIterator.remove();
+
+
+			}
+
+		}	//while
+
+		backGroundMusic.play();
 
 
 	}	// rander
