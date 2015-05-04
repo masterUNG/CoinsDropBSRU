@@ -20,17 +20,20 @@ import java.util.Iterator;
 
 public class MyGdxGame extends ApplicationAdapter {
 	private SpriteBatch batch;
-	private Texture imvBackGround, imvPig, imvCoins;
+	private Texture imvBackGround, imvPig, imvCoins, imvCloud;
 	private OrthographicCamera objOrthographicCamera;
-	private Rectangle pigRectangle, coinsRectangle;
+	private Rectangle pigRectangle, coinsRectangle,
+			dropletRectangle, cloudRectangle;
 	private Vector3 objVector3;
-	private Sound moveSound;
+	private Sound moveSound, waterDropSound, coinsDropSound;
 	private Array<Rectangle> objArray;
 	private long lastDropTime;
 	private Iterator<Rectangle> objIterator;
 	private Music backGroundMusic;
 	private BitmapFont scoreBitmapFont;
 	private String strScore = "0";
+	private int intScore;
+	private boolean bolGo = true;
 
 	
 	@Override
@@ -47,6 +50,14 @@ public class MyGdxGame extends ApplicationAdapter {
 		//Setup Object
 		imvPig = new Texture("pig.png");
 		imvCoins = new Texture("coins.png");
+		imvCloud = new Texture("cloud.png");
+
+		//Create cloudRectangle
+		cloudRectangle = new Rectangle();
+		cloudRectangle.x = 0;
+		cloudRectangle.y = 600;
+		cloudRectangle.width = 263;
+		cloudRectangle.height = 192;
 
 		//Create pigRectangle
 		pigRectangle = new Rectangle();
@@ -57,6 +68,8 @@ public class MyGdxGame extends ApplicationAdapter {
 
 		//Setup Sound Effect
 		moveSound = Gdx.audio.newSound(Gdx.files.internal("phonton2.wav"));
+		waterDropSound = Gdx.audio.newSound(Gdx.files.internal("water_drop.wav"));
+		coinsDropSound = Gdx.audio.newSound(Gdx.files.internal("coins_drop.wav"));
 
 		//Create Array from Random
 		objArray = new Array<Rectangle>();
@@ -104,16 +117,42 @@ public class MyGdxGame extends ApplicationAdapter {
 		//Draw Pig
 		batch.draw(imvPig, pigRectangle.x, pigRectangle.y);
 
+		//Draw Cloud
+		batch.draw(imvCloud, cloudRectangle.x, cloudRectangle.y);
+
 		//Draw Coins
 		for (Rectangle forRectangle : objArray) {
 			batch.draw(imvCoins, forRectangle.x, forRectangle.y);
 		}
+
+		//Draw Droplet
+
 
 		//Draw BitmapFont
 		scoreBitmapFont.draw(batch, "Score = " + strScore, 900, 80);
 
 
 		batch.end();
+
+		//Move Cloud
+
+		if (bolGo) {
+			if (cloudRectangle.x < 1017) {
+				cloudRectangle.x += 100 * Gdx.graphics.getDeltaTime();
+				cloudRectangle.y -= 10 * Gdx.graphics.getDeltaTime();
+			} else {
+				bolGo = false;
+			}
+		} else {
+			if (cloudRectangle.x > 0) {
+				cloudRectangle.x -= 100 * Gdx.graphics.getDeltaTime();
+				cloudRectangle.y += 10 * Gdx.graphics.getDeltaTime();
+			} else {
+				bolGo = true;
+			}
+		}
+
+
 
 		//Get onTouch
 		if (Gdx.input.isTouched()) {
@@ -159,16 +198,53 @@ public class MyGdxGame extends ApplicationAdapter {
 			if (objMyCoins.y + 64 < 0) {
 
 				objIterator.remove();
+				waterDropSound.play();
 
+			}	//if
 
-			}
+			//Check OverLap
+			if (objMyCoins.overlaps(pigRectangle)) {
+
+				objIterator.remove();
+				coinsDropSound.play();
+				intScore += 1;
+				strScore = Integer.toString(intScore);
+
+			}	//if
+
 
 		}	//while
 
 		backGroundMusic.play();
 
+		if (intScore == 20) {
+			dispose();
+
+		}
+
+
+
 
 	}	// rander
 
+	@Override
+	public void dispose() {
+		super.dispose();
+
+		imvPig.dispose();
+		imvCoins.dispose();
+		imvCloud.dispose();
+
+		moveSound.dispose();
+		waterDropSound.dispose();
+		coinsDropSound.dispose();
+		backGroundMusic.dispose();
+
+	}
+
+	@Override
+	public void pause() {
+		super.pause();
+	}
 }	//Main Class
 
