@@ -4,9 +4,11 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
@@ -27,6 +29,8 @@ public class MyGdxGame extends ApplicationAdapter {
 	private long lastDropTime;
 	private Iterator<Rectangle> objIterator;
 	private Music backGroundMusic;
+	private BitmapFont scoreBitmapFont;
+	private String strScore = "0";
 
 	
 	@Override
@@ -61,7 +65,10 @@ public class MyGdxGame extends ApplicationAdapter {
 		//Create Background Music
 		backGroundMusic = Gdx.audio.newMusic(Gdx.files.internal("bggame.mp3"));
 
-
+		//Create BitMapFont
+		scoreBitmapFont = new BitmapFont();
+		scoreBitmapFont.setColor(Color.WHITE);
+		scoreBitmapFont.setScale(5);
 
 	}	// Main Method
 
@@ -101,6 +108,9 @@ public class MyGdxGame extends ApplicationAdapter {
 		for (Rectangle forRectangle : objArray) {
 			batch.draw(imvCoins, forRectangle.x, forRectangle.y);
 		}
+
+		//Draw BitmapFont
+		scoreBitmapFont.draw(batch, "Score = " + strScore, 900, 80);
 
 
 		batch.end();
